@@ -1,0 +1,9 @@
+{
+	"packages": [
+		{
+			"source": "git:github.com/BetterCodeCrafting/pi-goal",
+			"extensions": [],
+			"skills": []
+		}
+	]
+}
