@@ -38,7 +38,7 @@ Production code is `.pi/extensions/pi-goal/*.ts` and `skills/pi-goal-writer/SKIL
 - ssh GitHub only: `origin git@github.com:BetterCodeCrafting/pi-goal`.
 - Forge is GitHub — manage everything above git with the `gh` CLI (`gh issue`, `gh pr`, `gh run watch`, `gh release`).
 - While babysitting a release run: `gh run watch`, and confirm the outcome via `gh release view <tag>` — do not infer publish success from the tag push alone.
-- **Tags are releases.** Pushing `v*` triggers `.github/workflows/release.yml`: `npm test` + `npm run check`, then GitHub Release and `npm publish`. Bump `package.json` version in the same commit as the tag. Never push a tag speculatively.
+- **Tags are releases.** Pushing `v*` triggers `.github/workflows/release.yml`: `npm test` + `npm run check`, then a GitHub Release. No npm publish — the fork consumes via git ref (`pi install git:github.com/BetterCodeCrafting/pi-goal@<tag>`). Bump `package.json` version in the same commit as the tag. Never push a tag speculatively.
 
 ## Subagents
 
