@@ -64,5 +64,13 @@ test("automatic continuation events use the short reminder, not the full audit e
 
 test("shortContinuationPrompt still carries the objective and current budget every turn", () => {
 	assert.match(indexSource, /function shortContinuationPrompt\(state: GoalState\): string \{/);
-	assert.match(indexSource, /<untrusted_objective>\$\{state\.objective\}<\/untrusted_objective>|<untrusted_objective>\n\$\{state\.objective\}\n<\/untrusted_objective>/);
+	// Short-prompt-only phrasing: the one-line Budget summary (the full
+	// continuationPrompt uses a multi-line Budget block instead), so this pin
+	// cannot accidentally match the full prompt's identical objective block.
+	assert.match(
+		indexSource,
+		/Budget: \$\{state\.timeUsedSeconds\}s spent, \$\{state\.tokensUsed\} tokens used, budget \$\{tokenBudget\}, remaining \$\{remainingTokens\}\./,
+	);
+	// The objective rides along every turn via the shared untrusted framing.
+	assert.match(indexSource, /\$\{untrustedObjective\(state\)\}/);
 });
