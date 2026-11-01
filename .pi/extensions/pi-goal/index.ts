@@ -119,9 +119,15 @@ function syncGoalTools(pi: ExtensionAPI) {
 }
 
 function persist(pi: ExtensionAPI, ctx: ExtensionContext, next: GoalState | null) {
+	const prevId = goal?.id;
 	goal = next;
 	if (next?.status !== "active") {
 		continuationQueued = false;
+		consecutiveAutoContinuations = 0;
+		autoContinuationPending = false;
+	} else if (next.id !== prevId) {
+		// A replaced goal (mid-turn create_goal upsert) must not inherit the
+		// streak of the goal it replaced.
 		consecutiveAutoContinuations = 0;
 		autoContinuationPending = false;
 	}
@@ -446,6 +452,8 @@ export default function piGoal(pi: ExtensionAPI) {
 		continuationQueued = false;
 		activeTurnStartedAt = null;
 		activeGoalThisTurnId = null;
+		consecutiveAutoContinuations = 0;
+		autoContinuationPending = false;
 		// Keep create_goal available, and hide read/update tools unless there is an active goal to pursue.
 		syncGoalTools(pi);
 		if (goal?.status === "active" && event.reason === "reload") {
@@ -472,24 +480,30 @@ export default function piGoal(pi: ExtensionAPI) {
 		}
 	});
 
-	pi.on("turn_start", (_event, ctx) => {
+	pi.on("agent_start", (_event, ctx) => {
+		// agent_start fires exactly once per agent loop; turn_start fires once
+		// per ROUND (pi re-emits it for every tool-result round inside one
+		// loop), so per-loop bookkeeping must live here, never in turn_start.
 		if (goal?.status === "waiting") {
-			// An externally triggered turn (user message or event notification) arrived:
+			// An externally triggered loop (user message or event notification) arrived:
 			// wake the goal back up so normal continuation resumes after this turn.
 			goal = { ...goal, status: "active", updatedAt: Date.now() };
 			persist(pi, ctx, goal);
 		}
-		activeTurnStartedAt = Date.now();
-		activeGoalThisTurnId = goal?.status === "active" ? goal.id : null;
 		if (autoContinuationPending) {
 			consecutiveAutoContinuations += 1;
 			autoContinuationPending = false;
 		} else {
-			// Turn wasn't started by our own queued continuation (a real user
+			// Loop wasn't started by our own queued continuation (a real user
 			// message, a manual resume, or a new/replaced goal) -- the streak
 			// of unattended repeats is broken, so reset it.
 			consecutiveAutoContinuations = 0;
 		}
+	});
+
+	pi.on("turn_start", () => {
+		activeTurnStartedAt = Date.now();
+		activeGoalThisTurnId = goal?.status === "active" ? goal.id : null;
 	});
 
 	pi.on("turn_end", (event, ctx) => {

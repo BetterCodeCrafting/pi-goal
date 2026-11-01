@@ -32,8 +32,10 @@ test("consecutive automatic continuations are capped and reset on non-active per
 });
 
 // The cap only fires for continuations *we* triggered automatically -- it must
-// not fire for turns started by a real user message, a manual /goal resume,
-// or a freshly (re)created goal, or it would block legitimate work.
+// not fire for loops started by a real user message, a manual /goal resume,
+// or a freshly (re)created goal, or it would block legitimate work. The
+// consume/reset lives in the agent_start handler because turn_start fires
+// once per tool-result round, not once per loop.
 test("only auto-triggered continuations count toward the streak", () => {
 	assert.match(indexSource, /autoContinuationPending = true;\s*emitGoalEvent\(pi, "continuation", goal/);
 	assert.match(
