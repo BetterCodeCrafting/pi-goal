@@ -31,7 +31,7 @@ pi install git:github.com/Michaelliv/pi-goal
 /goal statusbar off
 ```
 
-When a goal is active, the extension shows compact visible lifecycle markers like `Goal active` and `Goal continuing`; expand them with `ctrl+o` to inspect the objective and usage. The full continuation instructions ride along as the content of that custom message, so the model always has the objective and audit guidance in the transcript while the renderer keeps the visible UI compact.
+When a goal is active, the extension shows compact visible lifecycle markers like `Goal active` and `Goal continuing`; expand them with `ctrl+o` to inspect the objective and usage. The full continuation instructions ride along as the content of that custom message when a goal is activated or resumed; every automatic continuation after that carries a compact reminder with the objective and current budget, keeping the transcript lean while the renderer keeps the visible UI compact.
 
 The same Pi agent keeps running normal turns in the same session context until it calls `update_goal({ status: "complete" })`, marks the goal `waiting`, or the user pauses/clears it, or the token budget is reached. Reloading Pi pauses an active goal instead of silently resuming it; use `/goal resume` to continue.
 
@@ -70,7 +70,7 @@ The model is instructed to audit completion against real evidence before calling
 
 ## State
 
-Goal state is stored as Pi custom session entries with `customType: "pi-goal"`. It follows the active session branch, survives reloads, and does not require an external database.
+Goal state is stored as Pi custom session entries with `customType: "pi-goal"`. It follows the active session branch, survives reloads, and does not require an external database. Sessions saved with a goal in the `waiting` status require this version of pi-goal or newer to restore.
 
 ## License
 
